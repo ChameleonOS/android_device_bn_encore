@@ -6,7 +6,7 @@
     "branch": "encore-omap3-3"
   },
   {
-    "project": "wizard0f0s",
+    "project": "ChameleonOS",
     "repository": "android_vendor_bn_encore",
     "target_path": "vendor/bn/encore",
     "branch": "jellybean-mr1"
