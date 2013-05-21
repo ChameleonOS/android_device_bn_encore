@@ -1,0 +1,14 @@
+[
+  {
+    "project": "CyanogenMod",
+    "repository": "android_kernel_bn_encore",
+    "target_path": "kernel/bn/encore",
+    "branch": "encore-omap3-3"
+  },
+  {
+    "project": "wizard0f0s",
+    "repository": "android_vendor_bn_encore",
+    "target_path": "vendor/bn/encore",
+    "branch": "jellybean-mr1"
+  }
+]
