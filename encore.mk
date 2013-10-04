@@ -26,13 +26,18 @@ $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 PRODUCT_COPY_FILES += \
     device/bn/encore/init.encore.rc:root/init.encore.rc \
     device/bn/encore/init.encore.usb.rc:root/init.encore.usb.rc \
-    device/bn/encore/ueventd.encore.rc:root/ueventd.encore.rc
+    device/bn/encore/ueventd.encore.rc:root/ueventd.encore.rc \
+    device/bn/encore/fstab.encore:root/fstab.encore
 
 # key mapping and touchscreen files
 PRODUCT_COPY_FILES += \
     device/bn/encore/prebuilt/usr/idc/cyttsp-i2c.idc:/system/usr/idc/cyttsp-i2c.idc \
     device/bn/encore/prebuilt/usr/idc/ft5x06-i2c.idc:/system/usr/idc/ft5x06-i2c.idc \
     device/bn/encore/prebuilt/usr/keylayout/gpio-keys.kl:system/usr/keylayout/gpio-keys.kl
+
+# PowerVR graphics driver configuration
+PRODUCT_COPY_FILES += \
+   $(LOCAL_PATH)/etc/powervr.ini:system/etc/powervr.ini
 
 # Wifi firmware (modules are built from source)
 PRODUCT_COPY_FILES += \
@@ -64,10 +69,6 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
     frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml
 
-# Vold
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/etc/vold.encore.fstab:system/etc/vold.fstab
-
 # Media Profile
 PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/etc/media_profiles.xml:system/etc/media_profiles.xml \
@@ -79,10 +80,40 @@ PRODUCT_COPY_FILES += \
 
 # Audio Files - Need to fix Source - THANKS STEVEN676 (SLUO in irc)
 PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/prebuilt/alsa/alsa.omap3.so:system/lib/hw/alsa.omap3.so \
-   $(LOCAL_PATH)/prebuilt/alsa/libaudio.so:system/lib/libaudio.so \
+   $(LOCAL_PATH)/prebuilt/alsa/libasound.so:obj/lib/libasound.so \
+   $(LOCAL_PATH)/prebuilt/alsa/libasound.so:system/lib/libasound.so \
    $(LOCAL_PATH)/prebuilt/alsa/libaudio.so:obj/lib/libaudio.so \
-   $(LOCAL_PATH)/prebuilt/alsa/alsa.omap3.so:obj/lib/alsa.omap3.so
+   $(LOCAL_PATH)/prebuilt/alsa/libaudio.so:system/lib/libaudio.so \
+   $(LOCAL_PATH)/prebuilt/alsa/alsa.omap3.so:obj/lib/alsa.omap3.so \
+   $(LOCAL_PATH)/prebuilt/alsa/alsa.omap3.so:system/lib/hw/alsa.omap3.so
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/alsa.conf:system/usr/share/alsa/alsa.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/dsnoop.conf:system/usr/share/alsa/pcm/dsnoop.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/modem.conf:system/usr/share/alsa/pcm/modem.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/dpl.conf:system/usr/share/alsa/pcm/dpl.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/default.conf:system/usr/share/alsa/pcm/default.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/surround51.conf:system/usr/share/alsa/pcm/surround51.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/surround41.conf:system/usr/share/alsa/pcm/surround41.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/surround50.conf:system/usr/share/alsa/pcm/surround50.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/dmix.conf:system/usr/share/alsa/pcm/dmix.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/center_lfe.conf:system/usr/share/alsa/pcm/center_lfe.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/surround40.conf:system/usr/share/alsa/pcm/surround40.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/side.conf:system/usr/share/alsa/pcm/side.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/iec958.conf:system/usr/share/alsa/pcm/iec958.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/rear.conf:system/usr/share/alsa/pcm/rear.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/surround71.conf:system/usr/share/alsa/pcm/surround71.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/pcm/front.conf:system/usr/share/alsa/pcm/front.conf \
+    $(LOCAL_PATH)/prebuilt/alsa/conf/cards/aliases.conf:system/usr/share/alsa/cards/aliases.conf
+
+# If you'd like to build the audio components from source instead of using
+# the prebuilts, comment out the PRODUCT_COPY_FILES lines for audio above
+# and uncomment the lines below, then see BoardConfig.mk for further
+# instructions.
+#$(call inherit-product-if-exists, external/alsa-lib/alsa-lib-products.mk)
+#PRODUCT_PACKAGES += \
+#    libaudio \
+#    alsa.omap3
 
 PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/etc/audio_policy.conf:system/etc/audio_policy.conf
@@ -126,6 +157,7 @@ PRODUCT_PACKAGES += \
     overlay.omap3 \
     lights.encore \
     sensors.encore \
+    power.encore \
     uim-sysfs \
     libbt-vendor \
     libaudioutils \
@@ -181,6 +213,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
         libskiahw
 
+# Support for Browser's saved page feature. This allows
+# for pages saved on previous versions of the OS to be
+# viewed on the current OS.
+PRODUCT_PACKAGES += \
+	libskia_legacy
+
 # from omap3.mk.
 
 PRODUCT_PACKAGES += \
@@ -208,6 +246,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.heapsize=128m \
     ro.opengles.version=131072
 
-$(call inherit-product-if-exists, vendor/bn/encore/encore-vendor.mk)
+$(call inherit-product, vendor/bn/encore/encore-vendor.mk)
 #$(call inherit-product-if-exists, hardware/ti/wpan/ti-wpan-products.mk)
 #$(call inherit-product-if-exists, device/ti/proprietary-open/wl12xx/wlan/wl12xx-wlan-fw-products.mk)

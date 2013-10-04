@@ -30,8 +30,7 @@ TARGET_CPU_ABI := armeabi-v7a
 ARCH_ARM_HAVE_ARMV7A := true
 TARGET_CPU_ABI2 := armeabi
 TARGET_ARCH_VARIANT := armv7-a-neon
-ARCH_ARM_HAVE_TLS_REGISTER := true
-#ARCH_ARM_USE_NON_NEON_MEMCPY := true
+TARGET_CPU_VARIANT := cortex-a8
 TARGET_GLOBAL_CFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 # -fmodulo-sched -fmodulo-sched-allow-regmoves
 TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
@@ -51,6 +50,18 @@ OMAP_ENHANCEMENT := true
 ifdef OMAP_ENHANCEMENT
 COMMON_GLOBAL_CFLAGS += -DOMAP_ENHANCEMENT -DTARGET_OMAP3 -DOMAP_ENHANCEMENT_CPCAM -DOMAP_ENHANCEMENT_VTC
 endif
+
+# Conserve memory in the Dalvik heap
+# Details: https://github.com/CyanogenMod/android_dalvik/commit/15726c81059b74bf2352db29a3decfc4ea9c1428
+TARGET_ARCH_LOWMEM := true
+
+# for frameworks/native/libs/gui
+# disable use of EGL_KHR_fence_sync extension, since it slows things down
+COMMON_GLOBAL_CFLAGS += -DDONT_USE_FENCE_SYNC
+
+# for frameworks/native/services/surfaceflinger
+# use EGL_IMG_context_priority extension, which helps performance
+COMMON_GLOBAL_CFLAGS += -DHAS_CONTEXT_PRIORITY
 
 TARGET_SPECIFIC_HEADER_PATH := device/bn/encore/include
 
@@ -82,7 +93,7 @@ BOARD_FLASH_BLOCK_SIZE := 4096
 BOARD_USES_UBOOT := true
 
 # Inline kernel building config
-TARGET_KERNEL_CONFIG := encore_cm10.1_defconfig
+TARGET_KERNEL_CONFIG := encore_cm10.2_defconfig
 TARGET_KERNEL_SOURCE := kernel/bn/encore
 
 # Connectivity - Wi-Fi
@@ -101,7 +112,7 @@ endif
 
 TARGET_MODULES_SOURCE := "hardware/ti/wlan/mac80211/compat_wl12xx"
 
-WIFI_MODULES:
+wifi_modules:
 	make -C $(TARGET_MODULES_SOURCE) KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE)
 	mv $(KERNEL_OUT)/lib/crc7.ko $(KERNEL_MODULES_OUT)
 	mv hardware/ti/wlan/mac80211/compat_wl12xx/compat/compat.ko $(KERNEL_MODULES_OUT)
@@ -109,13 +120,16 @@ WIFI_MODULES:
 	mv hardware/ti/wlan/mac80211/compat_wl12xx/net/wireless/cfg80211.ko $(KERNEL_MODULES_OUT)
 	mv hardware/ti/wlan/mac80211/compat_wl12xx/drivers/net/wireless/wl12xx/wl12xx.ko $(KERNEL_MODULES_OUT)
 	mv hardware/ti/wlan/mac80211/compat_wl12xx/drivers/net/wireless/wl12xx/wl12xx_sdio.ko $(KERNEL_MODULES_OUT)
+	$(ARM_EABI_TOOLCHAIN)/arm-eabi-strip --strip-debug $(KERNEL_MODULES_OUT)/crc7.ko $(KERNEL_MODULES_OUT)/compat.ko $(KERNEL_MODULES_OUT)/mac80211.ko $(KERNEL_MODULES_OUT)/cfg80211.ko $(KERNEL_MODULES_OUT)/wl12xx.ko $(KERNEL_MODULES_OUT)/wl12xx_sdio.ko
 
-TARGET_KERNEL_MODULES := WIFI_MODULES
+TARGET_KERNEL_MODULES := wifi_modules
 
 BOARD_HAS_LARGE_FILESYSTEM := true
 BOARD_RECOVERY_IGNORE_BOOTABLES := true
 BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/bn/encore/recovery/recovery_ui.c
 TARGET_RECOVERY_PRE_COMMAND := "dd if=/dev/zero of=/rom/bcb bs=64 count=1 > /dev/null 2>&1 ; echo 'recovery' >> /rom/bcb ; sync"
+TARGET_RECOVERY_FSTAB := device/bn/encore/fstab.encore
+RECOVERY_FSTAB_VERSION := 2
 
 # Modem
 TARGET_NO_RADIOIMAGE := true
@@ -152,6 +166,15 @@ BOARD_HAS_NO_MISC_PARTITION := true
 # BOARD_USES_GENERIC_AUDIO := false
 # BOARD_USES_ALSA_AUDIO := true
 BUILD_WITH_ALSA_UTILS := true
+
+# If you'd like to build the audio components from source instead of using
+# the prebuilts, uncomment BOARD_USES_ALSA_AUDIO := true above and add the
+# following repositories to your manifest:
+#
+# <project name="steven676/android_hardware_alsa_sound" path="hardware/alsa_sound" remote="github" revision="jellybean-for-encore" />
+# <project name="steven676/android_external_alsa-lib" path="external/alsa-lib" remote="github" revision="jellybean" />
+#
+# Also see encore.mk for further instructions.
 
 HARDWARE_OMX := true
 
